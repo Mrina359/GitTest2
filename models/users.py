@@ -1,36 +1,19 @@
-from typing import List, Optional
-from pydantic import BaseModel, EmailStr
-from models.events import Event
+from typing import Optional
+from sqlmodel import SQLModel, Field
+from pydantic import EmailStr
 
-
-class User(BaseModel):
-    email: EmailStr
+# Таблица для базы данных
+class User(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    email: str = Field(unique=True, index=True)  # unique=True запретит дубликаты email
     password: str
-    events: Optional[List[Event]] = None
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "email": "fastapi@packt.com",
-                "password": "strong!!!",
-                "events": []
-            }
-        }
-
-
-class NewUser(User):
-    """Используется при регистрации. Наследует User."""
-    pass
-
-
-class UserSignIn(BaseModel):
+# Модель для регистрации (принимает данные)
+class NewUser(SQLModel):
     email: EmailStr
     password: str
 
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "email": "fastapi@packt.com",
-                "password": "strong!!!"
-            }
-        }
+# Модель для входа (принимает данные)
+class UserSignIn(SQLModel):
+    email: EmailStr
+    password: str
