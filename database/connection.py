@@ -1,6 +1,11 @@
+# Удалите или закомментируйте эту строку:
+# from motor.motor_asyncio import AsyncIOMotorClient
+
+# Добавьте эту:
+from pymongo import AsyncMongoClient
 from typing import Any, List, Optional, Type
 from beanie import init_beanie, Document, PydanticObjectId
-from motor.motor_asyncio import AsyncIOMotorClient
+#from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings
 
@@ -12,13 +17,14 @@ class Settings(BaseSettings):
 settings = Settings()
 
 async def init_db():
-    client = AsyncIOMotorClient(settings.DATABASE_URL)
-    # Импортируем модели, чтобы Beanie знал о них
+    # Было: client = AsyncIOMotorClient(settings.DATABASE_URL)
+    client = AsyncMongoClient(settings.DATABASE_URL)
+
     from models.events import Event
     from models.users import User
-    
+
     await init_beanie(
-        database=client.get_default_database(),
+        database=client.planner,  # или client["planner"]
         document_models=[Event, User]
     )
 
