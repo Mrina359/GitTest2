@@ -1,19 +1,16 @@
-from typing import Optional
-from sqlmodel import SQLModel, Field
+from beanie import Document
 from pydantic import EmailStr
+from typing import Optional, List
+from models.events import Event
 
-# Таблица для базы данных
-class User(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    email: str = Field(unique=True, index=True)  # unique=True запретит дубликаты email
-    password: str
-
-# Модель для регистрации (принимает данные)
-class NewUser(SQLModel):
+class User(Document):
     email: EmailStr
     password: str
+    events: Optional[List[Event]] = []
 
-# Модель для входа (принимает данные)
-class UserSignIn(SQLModel):
+    class Settings:
+        name = "users"
+
+class UserSignIn(Document):
     email: EmailStr
     password: str
