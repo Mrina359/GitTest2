@@ -1,0 +1,122 @@
+
+{% extends "base.html" %}
+
+{% block title %}
+    {% if is_signup %}Регистрация{% else %}Вход{% endif %} — ВместеКупим
+{% endblock %}
+
+{% block content %}
+
+<div class="custom-card auth-card">
+
+    <div class="text-center mb-4">
+        <div style="font-size: 48px;">🛒</div>
+
+        <h1 class="page-heading">
+            {% if is_signup %}
+                Создать аккаунт
+            {% else %}
+                С возвращением!
+            {% endif %}
+        </h1>
+
+        <p class="page-description">
+            {% if is_signup %}
+                Присоединяйтесь к совместным покупкам
+            {% else %}
+                Войдите, чтобы продолжить
+            {% endif %}
+        </p>
+    </div>
+
+    {% if error %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    <form method="post"
+          action="{% if is_signup %}/signup{% else %}/login{% endif %}">
+
+        <div class="mb-3">
+            <label class="form-label">Электронная почта</label>
+
+            <input
+                type="email"
+                name="email"
+                class="form-control"
+                placeholder="example@mail.com"
+                maxlength="254"
+                value="{{ email or '' }}"
+                required
+            >
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Пароль</label>
+
+            <input
+                type="password"
+                name="password"
+                class="form-control"
+                placeholder="Введите пароль"
+                minlength="6"
+                required
+            >
+
+            {% if is_signup %}
+                <small class="text-muted">
+                    Пароль должен содержать не менее 6 символов.
+                </small>
+            {% endif %}
+        </div>
+
+        {% if is_signup %}
+
+            <div class="mb-3">
+                <label class="form-label">Ваше имя</label>
+
+                <input
+                    type="text"
+                    name="display_name"
+                    class="form-control"
+                    placeholder="Как к вам обращаться?"
+                    maxlength="100"
+                    value="{{ display_name or '' }}"
+                    required
+                >
+            </div>
+
+        {% endif %}
+
+        <button type="submit" class="btn btn-success w-100 mt-2">
+            {% if is_signup %}
+                Зарегистрироваться
+            {% else %}
+                Войти
+            {% endif %}
+        </button>
+
+    </form>
+
+    <hr class="my-4">
+
+    <div class="text-center">
+
+        {% if is_signup %}
+
+            <span class="text-muted">Уже есть аккаунт?</span>
+            <a href="/login">Войти</a>
+
+        {% else %}
+
+            <span class="text-muted">Нет аккаунта?</span>
+            <a href="/signup">Зарегистрироваться</a>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}

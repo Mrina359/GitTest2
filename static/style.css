@@ -1,0 +1,194 @@
+
+:root {
+    --green: #66856c;
+    --green-dark: #4d6c53;
+    --green-light: #e8f0e8;
+    --cream: #f8f8f3;
+    --white: #ffffff;
+    --text: #343d35;
+    --muted: #89918a;
+    --border: #e8ebe5;
+}
+
+body {
+    background: var(--cream);
+    color: var(--text);
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+}
+
+.navbar {
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 0;
+}
+
+.navbar-brand {
+    color: var(--text);
+    font-size: 23px;
+    font-weight: 700;
+}
+
+.navbar-brand:hover {
+    color: var(--green);
+}
+
+.brand-accent {
+    color: var(--green);
+}
+
+.brand-icon {
+    margin-right: 7px;
+}
+
+.user-label {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.main-container {
+    padding-top: 40px;
+    padding-bottom: 60px;
+}
+
+.page-heading {
+    font-size: 30px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.page-description {
+    color: var(--muted);
+    margin-bottom: 28px;
+}
+
+.custom-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 22px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.025);
+}
+
+.section-title {
+    font-size: 19px;
+    font-weight: 700;
+    margin-bottom: 18px;
+}
+
+.form-control,
+.form-select {
+    border-radius: 9px;
+    border-color: var(--border);
+    padding: 11px 13px;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(102, 133, 108, 0.12);
+}
+
+.btn {
+    border-radius: 9px;
+    padding: 10px 17px;
+}
+
+.btn-success,
+.btn-primary {
+    background: var(--green);
+    border-color: var(--green);
+}
+
+.btn-success:hover,
+.btn-primary:hover {
+    background: var(--green-dark);
+    border-color: var(--green-dark);
+}
+
+.btn-outline-success {
+    color: var(--green);
+    border-color: var(--green);
+}
+
+.btn-outline-success:hover {
+    background: var(--green);
+    color: white;
+}
+
+.shopping-list-link {
+    text-decoration: none;
+    color: var(--text);
+    font-weight: 600;
+}
+
+.shopping-list-link:hover {
+    color: var(--green);
+}
+
+.list-group-item {
+    background: white;
+    border-color: var(--border);
+    padding: 16px;
+}
+
+.badge-active {
+    background: var(--green-light);
+    color: var(--green-dark);
+}
+
+.badge-archived {
+    background: #eeeeee;
+    color: #777777;
+}
+
+.shopping-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.item-bought {
+    color: var(--muted);
+    text-decoration: line-through;
+}
+
+.invite-box {
+    background: var(--green-light);
+    border: 1px solid #d9e6d9;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.invite-code {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--green-dark);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 35px 15px;
+    color: var(--muted);
+}
+
+.footer {
+    padding: 22px;
+    color: var(--muted);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+    background: white;
+}
+
+.auth-card {
+    max-width: 430px;
+    margin: 45px auto;
+}
+
+.admin-heading {
+    color: var(--green-dark);
+}
