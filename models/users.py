@@ -1,4 +1,3 @@
-
 from typing import Optional
 from sqlmodel import SQLModel, Field
 
@@ -9,6 +8,7 @@ class User(SQLModel, table=True):
     password: str
     display_name: str
     is_admin: bool = False
+    is_blocked: bool = Field(default=False)
 
 
 class Household(SQLModel, table=True):

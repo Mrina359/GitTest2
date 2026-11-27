@@ -1,3 +1,4 @@
+from security import active_user_id
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, EmailStr
@@ -39,8 +40,8 @@ class HouseholdRename(BaseModel):
     
 # Получение ID вошедшего пользователя
 
-def get_current_user_id(request: Request):
-    user_id = request.session.get("user_id")
+def get_current_user_id(request: Request, session: Session):
+    user_id = active_user_id(request, session)
 
     if not user_id:
         raise HTTPException(
@@ -94,6 +95,7 @@ async def signup(
     session.commit()
     session.refresh(new_user)
 
+    request.session["is_admin"] = False
     request.session["user_id"] = new_user.id
     request.session["user_name"] = new_user.display_name
 
@@ -136,11 +138,16 @@ async def signin(
 
     # Если пароль был старым или его параметры хеширования обновились,
     # сохраняем новый хеш
+    if user.is_blocked:
+        request.session.clear()
+        raise HTTPException(status_code=403, detail="Аккаунт заблокирован")
+
     if updated_hash:
         user.password = updated_hash
         session.add(user)
         session.commit()
 
+    request.session["is_admin"] = user.is_admin
     request.session["user_id"] = user.id
     request.session["user_name"] = user.display_name
 
@@ -158,7 +165,7 @@ async def create_household(
     request: Request,
     session: Session = Depends(get_session)
 ):
-    user_id = get_current_user_id(request)
+    user_id = get_current_user_id(request, session)
     name = data.name.strip()
 
     if not name:
@@ -213,7 +220,7 @@ async def join_household(
     request: Request,
     session: Session = Depends(get_session)
 ):
-    user_id = get_current_user_id(request)
+    user_id = get_current_user_id(request, session)
     invite_code = data.invite_code.strip().upper()
 
     household = session.exec(
@@ -267,7 +274,7 @@ async def rename_household(
     request: Request,
     session: Session = Depends(get_session)
 ):
-    user_id = get_current_user_id(request)
+    user_id = get_current_user_id(request, session)
 
     household = session.get(Household, household_id)
 
@@ -312,7 +319,7 @@ async def delete_household(
     request: Request,
     session: Session = Depends(get_session)
 ):
-    user_id = get_current_user_id(request)
+    user_id = get_current_user_id(request, session)
 
     household = session.get(Household, household_id)
 

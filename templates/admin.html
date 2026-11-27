@@ -1,150 +1,23 @@
-
 {% extends "base.html" %}
-
 {% block title %}Панель администратора{% endblock %}
-
 {% block content %}
-
-<div class="container py-4">
-
-    <div class="mb-4">
-        <h1>Панель администратора</h1>
-        <p class="text-muted">
-            Управление и обзор данных сервиса «ВместеКупим»
-        </p>
-    </div>
-
-    <h4 class="mb-3">Общая статистика</h4>
-
-    <div class="row g-3 mb-5">
-
-        <div class="col-md-4">
-            <div class="card p-3 h-100">
-                <div class="text-muted">Пользователи</div>
-                <h2>{{ users_count }}</h2>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card p-3 h-100">
-                <div class="text-muted">Домохозяйства</div>
-                <h2>{{ households_count }}</h2>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card p-3 h-100">
-                <div class="text-muted">Списки покупок</div>
-                <h2>{{ lists_count }}</h2>
-            </div>
-        </div>
-
-    </div>
-
-    <h4 class="mb-3">Пользователи</h4>
-
-    <div class="table-responsive mb-5">
-        <table class="table table-striped table-hover">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Имя</th>
-                    <th>Email</th>
-                    <th>Роль</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                {% for user in users %}
-                <tr>
-                    <td>{{ user.id }}</td>
-                    <td>{{ user.display_name }}</td>
-                    <td>{{ user.email }}</td>
-                    <td>
-                        {% if user.is_admin %}
-                            Администратор
-                        {% else %}
-                            Пользователь
-                        {% endif %}
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="4">Пользователей пока нет</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    <h4 class="mb-3">Домохозяйства</h4>
-
-    <div class="table-responsive mb-5">
-        <table class="table table-striped table-hover">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Название</th>
-                    <th>Код приглашения</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                {% for household in households %}
-                <tr>
-                    <td>{{ household.id }}</td>
-                    <td>{{ household.name }}</td>
-                    <td>{{ household.invite_code }}</td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="3">Домохозяйств пока нет</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    <h4 class="mb-3">Списки покупок</h4>
-
-    <div class="table-responsive mb-5">
-        <table class="table table-striped table-hover">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Название</th>
-                    <th>ID домохозяйства</th>
-                    <th>Статус</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                {% for shopping_list in lists %}
-                <tr>
-                    <td>{{ shopping_list.id }}</td>
-                    <td>{{ shopping_list.title }}</td>
-                    <td>{{ shopping_list.household_id }}</td>
-                    <td>
-                        {% if shopping_list.status == "active" %}
-                            Активный
-                        {% else %}
-                            В архиве
-                        {% endif %}
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="4">Списков пока нет</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    <a href="/" class="btn btn-outline-secondary">
-        Вернуться на главную
-    </a>
-
+<h1 class="page-heading admin-heading">Панель администратора</h1>
+<p class="page-description">Управление сервисом «ВместеКупим»</p>
+{% if notice %}<div class="alert {{ 'alert-danger' if notice[1] else 'alert-success' }}">{{ notice[0] }}</div>{% endif %}
+<div class="row g-3 mb-4">
+{% for label, value in stats %}<div class="col-6 col-md-3"><div class="custom-card h-100 mb-0"><div class="text-muted">{{ label }}</div><h2 class="admin-heading">{{ value }}</h2></div></div>{% endfor %}
 </div>
-
+<div class="row g-3">
+<aside class="col-lg-3"><div class="custom-card admin-nav"><a href="#users">Пользователи</a><a href="#households">Домохозяйства</a><a href="#lists">Списки покупок</a><a href="/">На главную</a></div></aside>
+<div class="col-lg-9">
+<section class="custom-card" id="users"><h2 class="section-title">Пользователи</h2>
+<form method="get" action="/admin" class="d-flex gap-2 mb-3"><input class="form-control" name="q" value="{{ q }}" placeholder="Имя или email"><button class="btn btn-success">Найти</button><a class="btn btn-outline-secondary" href="/admin">Сброс</a></form>
+{% for u in users %}<div class="admin-record"><strong>{{ u.display_name }}</strong> <span class="badge {{ 'bg-danger' if u.is_blocked else 'badge-active' }}">{{ 'Администратор' if u.is_admin else ('Заблокирован' if u.is_blocked else 'Активен') }}</span><div class="text-muted small">#{{ u.id }} · {{ u.email }}</div>
+{% if not u.is_admin %}<div class="d-flex flex-wrap gap-2 mt-2"><button class="btn btn-outline-success btn-sm" data-bs-toggle="collapse" data-bs-target="#user{{ u.id }}">Изменить</button><form method="post" action="/admin/users/{{ u.id }}/block"><button class="btn btn-outline-warning btn-sm">{{ 'Разблокировать' if u.is_blocked else 'Заблокировать' }}</button></form><form method="post" action="/admin/users/{{ u.id }}/delete" onsubmit="return confirm('Удалить аккаунт?')"><button class="btn btn-outline-danger btn-sm">Удалить</button></form></div>
+<div class="collapse mt-2" id="user{{ u.id }}"><form method="post" action="/admin/users/{{ u.id }}/edit" class="d-grid gap-2"><input class="form-control" name="display_name" value="{{ u.display_name }}" required><input class="form-control" type="email" name="email" value="{{ u.email }}" required><button class="btn btn-success">Сохранить</button></form></div>{% endif %}</div>{% else %}<p>Пользователи не найдены.</p>{% endfor %}</section>
+<section class="custom-card" id="households"><h2 class="section-title">Домохозяйства</h2>
+{% for h in households %}<div class="admin-record"><strong>{{ h.name }}</strong><div class="small text-muted">#{{ h.id }} · Код: {{ h.invite_code }}</div><details class="my-2"><summary>Участники и списки</summary>{% for m in members if m.household_id == h.id %}<div>{{ names.get(m.user_id, 'Неизвестный пользователь') }} — {{ 'Владелец' if m.role == 'owner' else 'Участник' }}</div>{% else %}<div>Нет участников</div>{% endfor %}{% for l in lists if l.household_id == h.id %}<div>Список: {{ l.title }}</div>{% endfor %}</details><div class="d-flex gap-2 flex-wrap"><button class="btn btn-outline-success btn-sm" data-bs-toggle="collapse" data-bs-target="#house{{ h.id }}">Изменить</button><form method="post" action="/admin/households/{{ h.id }}/delete" onsubmit="return confirm('Удалить домохозяйство, участников, списки и товары?')"><button class="btn btn-outline-danger btn-sm">Удалить</button></form></div><div class="collapse mt-2" id="house{{ h.id }}"><form method="post" action="/admin/households/{{ h.id }}/rename" class="d-flex gap-2"><input class="form-control" name="name" value="{{ h.name }}" required><button class="btn btn-success">Сохранить</button></form></div></div>{% else %}<p>Нет домохозяйств.</p>{% endfor %}</section>
+<section class="custom-card" id="lists"><h2 class="section-title">Списки покупок</h2>
+{% for l in lists %}<div class="admin-record"><strong>{{ l.title }}</strong> <span class="badge {{ 'badge-active' if l.status == 'active' else 'badge-archived' }}">{{ 'Активен' if l.status == 'active' else 'В архиве' }}</span><div class="small text-muted">{{ household_names.get(l.household_id, 'Неизвестное домохозяйство') }}</div><details class="my-2"><summary>Содержимое списка</summary>{% for i in items if i.list_id == l.id %}<div>{{ i.name }} — {{ i.quantity }} {{ i.unit }} ({{ {'needed':'Нужно купить','bought':'Куплено','removed':'Удалено'}.get(i.status, i.status) }})</div>{% else %}<div>Список пуст</div>{% endfor %}</details><div class="d-flex gap-2 flex-wrap"><button class="btn btn-outline-success btn-sm" data-bs-toggle="collapse" data-bs-target="#list{{ l.id }}">Изменить</button><form method="post" action="/admin/lists/{{ l.id }}/status"><button class="btn btn-outline-secondary btn-sm">{{ 'Архивировать' if l.status == 'active' else 'Восстановить' }}</button></form><form method="post" action="/admin/lists/{{ l.id }}/delete" onsubmit="return confirm('Удалить список со всеми товарами?')"><button class="btn btn-outline-danger btn-sm">Удалить</button></form></div><div class="collapse mt-2" id="list{{ l.id }}"><form method="post" action="/admin/lists/{{ l.id }}/rename" class="d-flex gap-2"><input class="form-control" name="title" value="{{ l.title }}" required><button class="btn btn-success">Сохранить</button></form></div></div>{% else %}<p>Нет списков.</p>{% endfor %}</section>
+</div></div>
 {% endblock %}

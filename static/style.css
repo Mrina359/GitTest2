@@ -192,3 +192,10 @@ body {
 .admin-heading {
     color: var(--green-dark);
 }
+
+.admin-nav { display: grid; gap: 10px; position: sticky; top: 20px; }
+.admin-nav a { color: var(--green-dark); text-decoration: none; padding: 8px; }
+.admin-nav a:hover { background: var(--green-light); border-radius: 8px; }
+.admin-record { padding: 16px 0; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
+.admin-record:last-child { border-bottom: 0; }
+.admin-record summary { cursor: pointer; color: var(--green-dark); }

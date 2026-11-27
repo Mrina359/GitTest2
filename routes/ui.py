@@ -10,7 +10,7 @@ from sqlmodel import Session, select
 from database.connection import get_session
 from models.lists import ShoppingList, ListItem
 from models.users import User, Household, HouseholdMember
-from security import hash_password, verify_password
+from security import hash_password, verify_password, active_user_id
 
 
 ui_router = APIRouter(tags=["UI"])
@@ -18,7 +18,7 @@ templates = Jinja2Templates(directory="templates")
 
 
 def get_home_context(request: Request, session: Session, error: str = None):
-    user_id = request.session.get("user_id")
+    user_id = active_user_id(request, session)
 
     user_households = session.exec(
         select(Household)
@@ -65,7 +65,7 @@ def is_household_member(
 
 @ui_router.get("/")
 async def home(request: Request, session: Session = Depends(get_session)):
-    user_id = request.session.get("user_id")
+    user_id = active_user_id(request, session)
 
     if not user_id:
         return RedirectResponse(url="/login", status_code=303)
@@ -85,7 +85,7 @@ async def view_list(
     request: Request,
     session: Session = Depends(get_session)
 ):
-    user_id = request.session.get("user_id")
+    user_id = active_user_id(request, session)
 
     if not user_id:
         return RedirectResponse(url="/login", status_code=303)
@@ -122,7 +122,7 @@ async def add_item_ui(
     unit: str = Form("шт"),
     session: Session = Depends(get_session)
 ):
-    user_id = request.session.get("user_id")
+    user_id = active_user_id(request, session)
 
     if not user_id:
         return RedirectResponse(url="/login", status_code=303)
@@ -158,14 +158,14 @@ async def add_item_ui(
     return RedirectResponse(url=f"/ui/list/{list_id}", status_code=303)
 
 
-@ui_router.get("/ui/list/{list_id}/buy/{item_id}")
+@ui_router.post("/ui/list/{list_id}/buy/{item_id}")
 async def buy_item_ui(
     list_id: int,
     item_id: int,
     request: Request,
     session: Session = Depends(get_session)
 ):
-    user_id = request.session.get("user_id")
+    user_id = active_user_id(request, session)
 
     if not user_id:
         return RedirectResponse(url="/login", status_code=303)
@@ -185,6 +185,9 @@ async def buy_item_ui(
     if shop_list.status != "active":
         return RedirectResponse(url=f"/ui/list/{list_id}", status_code=303)
 
+    if item.status != "needed":
+        return RedirectResponse(url=f"/ui/list/{list_id}", status_code=303)
+
     item.status = "bought"
     session.add(item)
     session.commit()
@@ -199,7 +202,7 @@ async def create_list_ui(
     household_id: int = Form(...),
     session: Session = Depends(get_session)
 ):
-    user_id = request.session.get("user_id")
+    user_id = active_user_id(request, session)
 
     if not user_id:
         return RedirectResponse(url="/login", status_code=303)
@@ -268,11 +271,16 @@ async def login_action(
             }
         )
 
+    if user.is_blocked:
+        request.session.clear()
+        return templates.TemplateResponse(request=request, name="login.html", context={"error": "Аккаунт заблокирован", "is_signup": False})
+
     if updated_hash:
         user.password = updated_hash
         session.add(user)
         session.commit()
 
+    request.session["is_admin"] = user.is_admin
     request.session["user_id"] = user.id
     request.session["user_name"] = user.display_name
 
@@ -343,6 +351,7 @@ async def signup_action(
     session.commit()
     session.refresh(new_user)
 
+    request.session["is_admin"] = False
     request.session["user_id"] = new_user.id
     request.session["user_name"] = new_user.display_name
 
@@ -361,7 +370,7 @@ async def create_household_ui(
     name: str = Form(...),
     session: Session = Depends(get_session)
 ):
-    user_id = request.session.get("user_id")
+    user_id = active_user_id(request, session)
 
     if not user_id:
         return RedirectResponse(url="/login", status_code=303)
@@ -410,7 +419,7 @@ async def join_household_ui(
     invite_code: str = Form(...),
     session: Session = Depends(get_session)
 ):
-    user_id = request.session.get("user_id")
+    user_id = active_user_id(request, session)
 
     if not user_id:
         return RedirectResponse(url="/login", status_code=303)
@@ -478,7 +487,7 @@ async def rename_household_ui(
     name: str = Form(...),
     session: Session = Depends(get_session)
 ):
-    user_id = request.session.get("user_id")
+    user_id = active_user_id(request, session)
 
     if not user_id:
         return RedirectResponse(url="/login", status_code=303)
@@ -517,7 +526,7 @@ async def delete_household_ui(
     request: Request,
     session: Session = Depends(get_session)
 ):
-    user_id = request.session.get("user_id")
+    user_id = active_user_id(request, session)
 
     if not user_id:
         return RedirectResponse(url="/login", status_code=303)
@@ -586,7 +595,7 @@ async def rename_list_ui(
     title: str = Form(...),
     session: Session = Depends(get_session)
 ):
-    user_id = request.session.get("user_id")
+    user_id = active_user_id(request, session)
 
     if not user_id:
         return RedirectResponse(url="/login", status_code=303)
@@ -632,7 +641,7 @@ async def delete_list_ui(
     request: Request,
     session: Session = Depends(get_session)
 ):
-    user_id = request.session.get("user_id")
+    user_id = active_user_id(request, session)
 
     if not user_id:
         return RedirectResponse(url="/login", status_code=303)
@@ -684,7 +693,7 @@ async def edit_item_ui(
     unit: str = Form(...),
     session: Session = Depends(get_session)
 ):
-    user_id = request.session.get("user_id")
+    user_id = active_user_id(request, session)
 
     if not user_id:
         return RedirectResponse(url="/login", status_code=303)
@@ -743,7 +752,7 @@ async def delete_item_ui(
     request: Request,
     session: Session = Depends(get_session)
 ):
-    user_id = request.session.get("user_id")
+    user_id = active_user_id(request, session)
 
     if not user_id:
         return RedirectResponse(url="/login", status_code=303)
@@ -785,7 +794,7 @@ async def restore_item_ui(
     request: Request,
     session: Session = Depends(get_session)
 ):
-    user_id = request.session.get("user_id")
+    user_id = active_user_id(request, session)
 
     if not user_id:
         return RedirectResponse(url="/login", status_code=303)

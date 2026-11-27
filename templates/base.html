@@ -25,7 +25,7 @@
                 <span class="user-label">
                     {{ request.session.get("user_name") }}
                 </span>
-                {% if request.session.get("user_id") %}
+                {% if request.session.get("is_admin") %}
                 <a href="/admin" class="nav-link">Администрирование</a>
                 {% endif %}
                 <a href="/logout" class="btn btn-outline-secondary btn-sm">

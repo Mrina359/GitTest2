@@ -1,3 +1,4 @@
+from security import active_user_id
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
@@ -34,8 +35,8 @@ class ItemUpdate(BaseModel):
 
 # Получение ID вошедшего пользователя
 
-def get_current_user_id(request: Request):
-    user_id = request.session.get("user_id")
+def get_current_user_id(request: Request, session: Session):
+    user_id = active_user_id(request, session)
 
     if not user_id:
         raise HTTPException(
@@ -71,7 +72,7 @@ async def create_list(
     request: Request,
     session: Session = Depends(get_session)
 ):
-    user_id = get_current_user_id(request)
+    user_id = get_current_user_id(request, session)
 
     title = data.title.strip()
 
@@ -116,7 +117,7 @@ async def add_item(
     request: Request,
     session: Session = Depends(get_session)
 ):
-    user_id = get_current_user_id(request)
+    user_id = get_current_user_id(request, session)
 
     shopping_list = session.get(ShoppingList, list_id)
 
@@ -190,7 +191,7 @@ async def get_list(
     request: Request,
     session: Session = Depends(get_session)
 ):
-    user_id = get_current_user_id(request)
+    user_id = get_current_user_id(request, session)
 
     shopping_list = session.get(ShoppingList, list_id)
 
@@ -232,7 +233,7 @@ async def archive_list(
     request: Request,
     session: Session = Depends(get_session)
 ):
-    user_id = get_current_user_id(request)
+    user_id = get_current_user_id(request, session)
 
     shopping_list = session.get(ShoppingList, list_id)
 
@@ -283,7 +284,7 @@ async def rename_list(
     request: Request,
     session: Session = Depends(get_session)
 ):
-    user_id = get_current_user_id(request)
+    user_id = get_current_user_id(request, session)
 
     shopping_list = session.get(ShoppingList, list_id)
 
@@ -328,7 +329,7 @@ async def delete_list(
     request: Request,
     session: Session = Depends(get_session)
 ):
-    user_id = get_current_user_id(request)
+    user_id = get_current_user_id(request, session)
 
     shopping_list = session.get(ShoppingList, list_id)
 
@@ -379,7 +380,7 @@ async def update_item(
     request: Request,
     session: Session = Depends(get_session)
 ):
-    user_id = get_current_user_id(request)
+    user_id = get_current_user_id(request, session)
 
     shopping_list = session.get(ShoppingList, list_id)
     item = session.get(ListItem, item_id)
@@ -438,7 +439,7 @@ async def delete_item(
     request: Request,
     session: Session = Depends(get_session)
 ):
-    user_id = get_current_user_id(request)
+    user_id = get_current_user_id(request, session)
 
     shopping_list = session.get(ShoppingList, list_id)
     item = session.get(ListItem, item_id)
